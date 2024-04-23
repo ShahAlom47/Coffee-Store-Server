@@ -25,6 +25,7 @@ async function run() {
     await client.connect();
 
     const coffeeCollection = client.db("coffeeDB").collection('coffee');
+    const userCollection = client.db("userDB").collection('user');
 
 
     // add data
@@ -91,6 +92,53 @@ app.delete('/coffee/:_id',async (req, res) => {
   }
   res.send(result)
 })
+
+//  user related api  
+
+// create user
+app.post('/user', async (req, res) => {
+  const newUser = req.body;
+  const result = await userCollection.insertOne(newUser);
+   res.send(result)
+});
+
+// get multiple user
+app.get('/user',async(req,res)=>{
+  const cursor = userCollection.find();
+      const result = await cursor.toArray()
+      res.send(result)
+
+})
+
+// update user 
+app.patch('/user',async(req,res)=>{
+const email=  req.body.email
+const time= req.body.logTime
+
+  const filter = { email: email };
+  const updateDoc = {
+    $set: {
+      lastLogTime: time
+    },
+  };
+  const result = await userCollection.updateOne(filter, updateDoc);
+  res.send(result)
+})
+
+// delete a user
+
+app.delete('/user/:id',async(req,res)=>{
+  const id = req.params.id;
+
+  const query = { _id: new ObjectId(id) };
+  const result = await userCollection.deleteOne(query);
+  res.send(result);
+
+
+})
+
+
+
 
 
     await client.db("admin").command({ ping: 1 }); 
