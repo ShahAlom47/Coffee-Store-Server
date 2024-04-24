@@ -5,7 +5,12 @@ const app = express()
 const port = process.env.SERVER_PORT || 5000;
 const { MongoClient, ServerApiVersion ,ObjectId} = require('mongodb');
 
-app.use(cors())
+app.use(cors({
+  origin: ["http://localhost:5173"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  withCredentials: true,
+}
+))
 app.use(express.json());
 
 
@@ -22,7 +27,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect();
+    
 
     const coffeeCollection = client.db("coffeeDB").collection('coffee');
     const userCollection = client.db("userDB").collection('user');
@@ -141,7 +146,6 @@ app.delete('/user/:id',async(req,res)=>{
 
 
 
-    await client.db("admin").command({ ping: 1 }); 
 
     console.log("Pinged your deployment. You successfully connected to MongoDB! m");
   } finally {
