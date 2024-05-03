@@ -1,17 +1,24 @@
 const express = require('express')
+
 require('dotenv').config()
 const cors = require('cors')
+var jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser')
 const app = express()
-const port = process.env.SERVER_PORT || 5000;
+const port = process.env.SERVER_PORT || 3000;
 const { MongoClient, ServerApiVersion ,ObjectId} = require('mongodb');
+
+
 
 app.use(cors({
   origin: ["http://localhost:5173"],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-  withCredentials: true,
+  credentials: true,
 }
 ))
 app.use(express.json());
+app.use(cookieParser())  //*** */
+
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.r31xce1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -32,7 +39,29 @@ async function run() {
     const coffeeCollection = client.db("coffeeDB").collection('coffee');
     const userCollection = client.db("userDB").collection('user');
 
+// auth relaeted api 
 
+app.post('/jwt', async (req, res) => {
+  const userInfo = req.body;
+// const {email} = userInfo.email;
+var token = jwt.sign(userInfo,process.env.ACCESS_TOKEN,{expiresIn: '1h' });
+
+res.cookie('token',token ,{
+  httpOnly:true,
+  secure:false,
+  sameSite:'none'
+
+})
+res.send({success:true})
+console.log(token);
+
+  // res.send(userInfo)
+});
+
+
+
+
+// services related api 
     // add data
 
     app.post('/coffee', async (req, res) => {
@@ -158,7 +187,7 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-  res.send('Hello World!m')
+  res.send('Hello World!moo')
 })
 
 app.listen(port, () => {
